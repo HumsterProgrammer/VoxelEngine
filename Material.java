@@ -1,7 +1,7 @@
 
 class Material{
 	public static Material AIR = new Material(0,0,0, 0);
-	public static Material OBJ = new Materail(255,255,255, 255);
+	public static Material OBJ = new Material(255,255,255, 255);
 	
 	
 	public int red;
