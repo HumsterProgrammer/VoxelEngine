@@ -30,8 +30,8 @@ class Main extends Component{
 	private ArrayList<Object> mass = new ArrayList<Object>();
 	private PointLight l = new PointLight(new Vector(100, 100, 100));
 	
-	Material lite = new Material(255,255,255);
-	Material dark = new Material(128,128,128);
+	//Material lite = new Material(255,255,255);
+	//Material dark = new Material(128,128,128);
 	
 	
 	Main(int w, int h){

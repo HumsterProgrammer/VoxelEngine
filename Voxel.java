@@ -11,32 +11,63 @@ class Voxel{
 	
 	
 	
-	Voxel(Vector c, int s, Material m, int d){
+	Voxel(Vector c, int s, Material m, int d, int max_depth){
 		this.cord = c;
 		this.size = s;
 		this.mat = m;
 		this.depth = d;
 		
 		this.daughter = new Voxel[8];
-		for(int i = 0; i < 8; i++){
-			Vector c_1 = new Vector(i/2%2,i%2,i/4);
-			c_1 = Vector.multiply(c_1, s/2);
-			this.daughter[i] = new Voxel(c_1 ,s/2 ,m,d+1);// must be setted in future
+		if(d == max_depth){
+			for(int i = 0; i< 8; i++){
+				this.daughter[i] = null;
+			}
+		}else{
+			for(int i = 0; i < 8; i++){
+				Vector c_1 = new Vector(i/2%2,i%2,i/4);
+				c_1 = Vector.multiply(c_1, s/2);
+				this.daughter[i] = new Voxel(c_1 ,s/2 ,m,d+1, max_depth);// must be setted in future
+			}
 		}
 	}
 	
 	public void setMaterial(Material x){this.mat = x;}
+	public Material getMaterial(){return this.mat;}
 	
-	
-	public double renderVoxel(Vector camera, Vector alpha, int max_depth){
-		if(max_depth == this.depth){
-			return getIntersection(camera, alpha, this.cord, this.size);
-		}
-		double t = 0;
+	public Voxel getVoxel(Vector c){
+		Voxel result = this;
 		for(int i = 0; i< 8; i++){
-			t = getIntersection(camera, alpha, daughter[i].cord, daughter[i].size);
-			if(t>=0) daughter[i].renderVoxel(camera, alpha, max_depth);
+			if(daughter[i] == null){continue;}
+			if(c.x >= this.cord.x && c.x<= this.cord.x+this.size){
+				if(c.x >= this.cord.x && c.x<= this.cord.x+this.size){
+					if(c.x >= this.cord.x && c.x<= this.cord.x+this.size){
+						return daughter[i].getVoxel(c);
+					}
+				}
+			}
 		}
+		return result;
+	}
+	public void setVoxelMaterial(Vector c, Material m){
+		getVoxel(c).setMaterial(m);
+	}
+	
+	
+	public RenderReturn renderVoxel(Vector camera, Vector alpha, int max_depth){
+		double t = getIntersection(camera, alpha, this.cord, this.size);
+		if(max_depth == this.depth || t <0){
+			return new RenderReturn(t, this.cord, this.size);
+		}
+		
+		RenderReturn min_t = new RenderReturn(-1, Vector.ZERO, 1);
+		for(int i = 0; i< 8; i++){
+			t = getIntersection(camera, alpha, daughter[i].cord, daughter[i].size); // Если пересекается
+			if(t>=0){
+				RenderReturn x = daughter[i].renderVoxel(camera, alpha, max_depth);// проверяет дочерние воксели
+				if(x.t<min_t.t && x.t>=0 || min_t.t == -1) min_t = x;
+			}
+		}
+		return min_t;
 	}
 	
 	//function of get Intersection with this voxel object. Can be optimoze in future
@@ -78,5 +109,26 @@ class Voxel{
 		if(ty>= tx1 && ty<= tx2 && ty>= tz1 && ty<= tz2 && (ty<t || t == -1)) t = ty;
 		if(tz>= ty1 && tz<= ty2 && tz>= tx1 && tz<= tx2 && (tz<t || t == -1)) t = tz;
 		return t;
+	}
+}
+
+class RenderReturn{
+	public double t = 0;
+	public Vector cord = Vector.ZERO;
+	public int size = 0;
+	
+	RenderReturn(double x, Vector y, int z){
+		this.t = x;
+		this.cord = y;
+		this.size = z;
+	}
+	public Vector getNormal(Vector dote){
+		if(Math.abs(dote.x - this.cord.x) < 0.01) return Vector.i;
+		if(Math.abs(dote.x - this.cord.x+size) < 0.01) return new Vector(-1, 0,0);
+		if(Math.abs(dote.y - this.cord.y)<0.01) return Vector.j;
+		if(Math.abs(dote.y - this.cord.y+size)<0.01) return new Vector(0, -1,0);
+		if(Math.abs(dote.z - this.cord.z)<0.01) return Vector.k;
+		if(Math.abs(dote.z - this.cord.z+size)<0.01) return new Vector(0, 0,-1);
+		return Vector.i;
 	}
 }
