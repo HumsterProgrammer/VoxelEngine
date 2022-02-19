@@ -62,6 +62,7 @@ class Vector{
 		
 		return a;
 	}
+	public String toString(){return this.x+" "+this.y+" "+this.z;}
 }
 
 abstract class Object{
@@ -87,47 +88,7 @@ class Camera{
 }
 
 
-class Sphere extends Object{
-	public double r;
-	
-	Sphere(Vector c, double x){
-		this.cord = c;
-		this.r = x;
-	}
-	public double getMinIntersection(Vector c, Vector v){
-		Vector d = Vector.negate(c, this.cord);
-		double a1 = v.x*v.x + v.y*v.y + v.z*v.z;
-		double b1 = Vector.scalarMul(v, d);
-		double c1 = d.x*d.x + d.y*d.y + d.z*d.z - this.r*this.r;
-		
-		double D = b1*b1 - a1*c1;
-		if(D<0) return -1;
-		D = Math.sqrt(D);
-		double t = (-1)*(D+b1)/a1;
-		if(t>=-0.001) return t;
-		t = (D-b1)/a1;
-		if(t>=-0.001) return t;
-		return -1;
-	}
-	public double getMaxIntersection(Vector c, Vector v){
-		Vector d = Vector.negate(c, this.cord);
-		double a1 = v.x*v.x + v.y*v.y + v.z*v.z;
-		double b1 = Vector.scalarMul(v, d);
-		double c1 = d.x*d.x + d.y*d.y + d.z*d.z - this.r*this.r;
-		
-		double D = b1*b1 - a1*c1;
-		if(D<0) return -1;
-		D = Math.sqrt(D);
-		double t = (D-b1)/a1;
-		if(t>=-0.001) return t;
-		t = -(D+b1)/a1;
-		if(t>=-0.001) return t;
-		return -1;
-	}
-	public Vector getNormal(Vector dote){
-		return Vector.negate(dote, this.cord);
-	}
-}
+
 class Cube extends Object{
 	public double a;
 	

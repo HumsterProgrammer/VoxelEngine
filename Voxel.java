@@ -35,35 +35,38 @@ class Voxel{
 	public Material getMaterial(){return this.mat;}
 	
 	public Voxel getVoxel(Vector c){
-		Voxel result = this;
+		System.out.println(c.toString());
 		for(int i = 0; i< 8; i++){
 			if(daughter[i] == null){continue;}
-			if(c.x >= this.cord.x && c.x<= this.cord.x+this.size){
-				if(c.x >= this.cord.x && c.x<= this.cord.x+this.size){
-					if(c.x >= this.cord.x && c.x<= this.cord.x+this.size){
+			if(c.x >= daughter[i].cord.x && c.x<= daughter[i].cord.x+daughter[i].size){
+				if(c.y >= daughter[i].cord.y && c.y<= daughter[i].cord.y+daughter[i].size){
+					if(c.z >= daughter[i].cord.z && c.z<= daughter[i].cord.z+daughter[i].size){
+						System.out.println(i);
 						return daughter[i].getVoxel(c);
 					}
 				}
 			}
 		}
-		return result;
+		return this;
 	}
 	public void setVoxelMaterial(Vector c, Material m){
 		getVoxel(c).setMaterial(m);
 	}
 	
 	
-	public RenderReturn renderVoxel(Vector camera, Vector alpha, int max_depth){
+	public RenderReturn renderVoxel(Vector camera, Vector alpha, int max_depth, Material start_material){
 		double t = getIntersection(camera, alpha, this.cord, this.size);
 		if(max_depth == this.depth || t <0){
+			if(this.mat == start_material) t = -1;
 			return new RenderReturn(t, this.cord, this.size);
 		}
 		
 		RenderReturn min_t = new RenderReturn(-1, Vector.ZERO, 1);
 		for(int i = 0; i< 8; i++){
+			if(daughter[i] == null) continue;
 			t = getIntersection(camera, alpha, daughter[i].cord, daughter[i].size); // Если пересекается
 			if(t>=0){
-				RenderReturn x = daughter[i].renderVoxel(camera, alpha, max_depth);// проверяет дочерние воксели
+				RenderReturn x = daughter[i].renderVoxel(camera, alpha, max_depth, start_material);// проверяет дочерние воксели
 				if(x.t<min_t.t && x.t>=0 || min_t.t == -1) min_t = x;
 			}
 		}
@@ -123,12 +126,12 @@ class RenderReturn{
 		this.size = z;
 	}
 	public Vector getNormal(Vector dote){
-		if(Math.abs(dote.x - this.cord.x) < 0.01) return Vector.i;
-		if(Math.abs(dote.x - this.cord.x+size) < 0.01) return new Vector(-1, 0,0);
-		if(Math.abs(dote.y - this.cord.y)<0.01) return Vector.j;
-		if(Math.abs(dote.y - this.cord.y+size)<0.01) return new Vector(0, -1,0);
-		if(Math.abs(dote.z - this.cord.z)<0.01) return Vector.k;
-		if(Math.abs(dote.z - this.cord.z+size)<0.01) return new Vector(0, 0,-1);
+		if(Math.abs(dote.x - this.cord.x) < 0.01) return new Vector(-1, 0,0);
+		if(Math.abs(dote.x - this.cord.x-size) < 0.01) return Vector.i;
+		if(Math.abs(dote.y - this.cord.y)<0.01) return new Vector(0, -1,0);
+		if(Math.abs(dote.y - this.cord.y-size)<0.01) return Vector.j;
+		if(Math.abs(dote.z - this.cord.z)<0.01) return new Vector(0,0,-1);
+		if(Math.abs(dote.z - this.cord.z-size)<0.01) return Vector.k;
 		return Vector.i;
 	}
 }

@@ -27,7 +27,8 @@ class Main extends Component{
 	
 	Camera camera = new Camera(new Vector(200,0,0), new Vector(-4,0,0));
 	
-	private ArrayList<Object> mass = new ArrayList<Object>();
+	//private ArrayList<Object> mass = new ArrayList<Object>();
+	private Voxel voxelTerrain = new Voxel(Vector.ZERO, 40, Material.OBJ, 0, 1);
 	private PointLight l = new PointLight(new Vector(100, 100, 100));
 	
 	//Material lite = new Material(255,255,255);
@@ -43,9 +44,11 @@ class Main extends Component{
 		this.addMouseListener(ml);
 		this.addMouseMotionListener(ml);
 		
-		mass.add(new Cube(new Vector(0,20,0), 10));
+		/*mass.add(new Cube(new Vector(0,20,0), 10));
 		mass.add(new Sphere(Vector.ZERO, 10));
-		mass.add(new Plane(new Vector(0,0,1), -30));;
+		mass.add(new Plane(new Vector(0,0,1), -30));*/
+		
+		voxelTerrain.setVoxelMaterial(new Vector(21,21,21), Material.AIR);
 	}
 	
 	public void getFps(long delt){
@@ -65,7 +68,17 @@ class Main extends Component{
 		Vector view = Vector.getOne(Vector.sum(camera.alpha, Vector.multiply(new Vector(0,x/(double)this.getWidth()*k_width,-y/(double)this.getHeight()), Vector.getLength(this.camera.alpha))));
 		
 		view = Vector.rotateVector(view, camera.a_z, camera.a_y);
-		double t = -1;
+		RenderReturn rr = voxelTerrain.renderVoxel(camera.cord, view, 1, Material.AIR);
+		if(rr.t>0 && rr.t< 10000){
+			Vector dote = Vector.sum(this.camera.cord, Vector.multiply(view, rr.t));
+			
+			Vector n = rr.getNormal(dote);
+			double k = Vector.scalarMul(Vector.getOne(n), Vector.getOne(Vector.negate(this.l.cord, dote)));
+			//System.out.println(dote.toString()+ n.toString());
+			if(k<0) k = 0;
+			a = Material.getUnityColor(k/3);
+		}
+		/*double t = -1;
 		int index = 0;
 		for(int i = 0; i< this.mass.size(); i++){
 			double t1 = this.mass.get(i).getMinIntersection(this.camera.cord,view);
@@ -83,7 +96,8 @@ class Main extends Component{
 			if(k<0) k = 0;
 			a = Material.getUnityColor(k);
 			
-		}
+		}*/
+		
 		this.buffer_screen.setRGB(x+this.getWidth()/2, y+this.getHeight()/2, a);
 	}
 	/*private double checkIntersection(Vector c, Vector v){				// check intersection of vector with all objects
