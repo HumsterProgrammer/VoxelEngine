@@ -19,3 +19,6 @@ class Material{
 		return (d*256 + d)*256 + d;
 	}
 }
+/*class Light_Material extends Material{
+	
+}*/

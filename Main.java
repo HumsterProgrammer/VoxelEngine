@@ -31,9 +31,7 @@ class Main extends Component{
 	private Voxel voxelTerrain = new Voxel(Vector.ZERO, 40, Material.OBJ, 0, 1);
 	private PointLight l = new PointLight(new Vector(100, 100, 100));
 	
-	//Material lite = new Material(255,255,255);
-	//Material dark = new Material(128,128,128);
-	
+	private Skybox skybox = new Skybox("./src/skybox.png");
 	
 	Main(int w, int h){
 		k_width = (double)w/h;
@@ -43,10 +41,6 @@ class Main extends Component{
 		this.addKeyListener(ml);
 		this.addMouseListener(ml);
 		this.addMouseMotionListener(ml);
-		
-		/*mass.add(new Cube(new Vector(0,20,0), 10));
-		mass.add(new Sphere(Vector.ZERO, 10));
-		mass.add(new Plane(new Vector(0,0,1), -30));*/
 		
 		voxelTerrain.setVoxelMaterial(new Vector(21,21,21), Material.AIR);
 	}
@@ -74,44 +68,15 @@ class Main extends Component{
 			
 			Vector n = rr.getNormal(dote);
 			double k = Vector.scalarMul(Vector.getOne(n), Vector.getOne(Vector.negate(this.l.cord, dote)));
-			//System.out.println(dote.toString()+ n.toString());
-			if(k<0) k = 0;
-			a = Material.getUnityColor(k/3);
-		}
-		/*double t = -1;
-		int index = 0;
-		for(int i = 0; i< this.mass.size(); i++){
-			double t1 = this.mass.get(i).getMinIntersection(this.camera.cord,view);
-			if(t1>0){
-				if(t1< t || t == -1){
-					t = t1;
-					index = i;
-				}
-			}
-		}
-		if(t>0 && t< 10000){
-			Vector dote = Vector.sum(this.camera.cord, Vector.multiply(view, t));
-			Vector n = this.mass.get(index).getNormal(dote);
-			double k = Vector.scalarMul(Vector.getOne(n), Vector.getOne(Vector.negate(this.l.cord, dote)));
+			
 			if(k<0) k = 0;
 			a = Material.getUnityColor(k);
-			
-		}*/
+		}else{
+			a = skybox.getPixel(view);
+		}
 		
 		this.buffer_screen.setRGB(x+this.getWidth()/2, y+this.getHeight()/2, a);
 	}
-	/*private double checkIntersection(Vector c, Vector v){				// check intersection of vector with all objects
-		double t = -1;
-		for(int i = 0; i< this.mass.size(); i++){
-			double t1 = this.mass.get(i).getMinIntersection(c,v);
-			if(t1>0){
-				if(t1< t || t == -1){
-					t = t1;
-				}
-			}
-		}
-		return t;
-	}*/
 	
 	@Override
 	public void paint(Graphics g){ 										// function of paint.
@@ -142,10 +107,10 @@ class Main extends Component{
 			g.getFps(delt);
 			rm.paintDirtyRegions();
 			delt = System.currentTimeMillis() - d0;
-			try{
+			/*try{
 				Thread.currentThread().sleep(fps_time - delt);
 				delt = fps_time;
-			}catch(Exception e){}
+			}catch(Exception e){}*/
 		}
 	}
 	
@@ -153,22 +118,30 @@ class Main extends Component{
 		private double x0 = 0;
 		private double y0 = 0;
 		
+		int len = 5;
+		
+		Vector forward = new Vector(-len,0,0);
+		Vector backward = new Vector(len,0,0);
+		Vector right = new Vector(0,len,0);
+		Vector left = new Vector(0,-len,0);
+		Vector up = new Vector(0,0,len);
+		Vector down = new Vector(0,0,-len);
 		
 		public void keyPressed(KeyEvent e){
 			if(e.getKeyCode() == KeyEvent.VK_W){
-				camera.cord.x -= 5;
+				camera.cord = Vector.sum(camera.cord, Vector.rotateVector(forward, camera.a_z, camera.a_y));
 			}else if(e.getKeyCode() == KeyEvent.VK_S){
-				camera.cord.x += 5;
+				camera.cord = Vector.sum(camera.cord, Vector.rotateVector(backward, camera.a_z, camera.a_y));
 			}
 			if(e.getKeyCode() == KeyEvent.VK_A){
-				camera.cord.y -= 5;
+				camera.cord = Vector.sum(camera.cord, Vector.rotateVector(left, camera.a_z, camera.a_y));
 			}else if(e.getKeyCode() == KeyEvent.VK_D){
-				camera.cord.y += 5;
+				camera.cord = Vector.sum(camera.cord, Vector.rotateVector(right, camera.a_z, camera.a_y));
 			}
 			if(e.getKeyCode() == KeyEvent.VK_SPACE){
-				camera.cord.z += 5;
+				camera.cord = Vector.sum(camera.cord, Vector.rotateVector(up, camera.a_z, camera.a_y));
 			}else if(e.getKeyCode() == KeyEvent.VK_SHIFT){
-				camera.cord.z -= 5;
+				camera.cord = Vector.sum(camera.cord, Vector.rotateVector(down, camera.a_z, camera.a_y));
 			}
 			if(e.getKeyCode() == KeyEvent.VK_1){
 				camera.a_y += 0.1;

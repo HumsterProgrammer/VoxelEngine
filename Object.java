@@ -1,4 +1,9 @@
 
+import java.awt.image.BufferedImage;
+
+import javax.imageio.ImageIO;
+import java.io.File;
+
 
 class Vector{
 	public static final Vector ZERO = new Vector(0,0,0);
@@ -63,6 +68,14 @@ class Vector{
 		return a;
 	}
 	public String toString(){return this.x+" "+this.y+" "+this.z;}
+	
+	public Vector reflectVector(Vector a, Vector n){
+		Vector r = new Vector(a.x, a.y, a.z);
+		if(Math.abs(n.x) == 1) r.x = -a.x;
+		if(Math.abs(n.y) == 1) r.y = -a.y;
+		if(Math.abs(n.z) == 1) r.z = -a.z;
+		return r;
+	}
 }
 
 abstract class Object{
@@ -87,120 +100,39 @@ class Camera{
 	}
 }
 
-
-
-class Cube extends Object{
-	public double a;
+class Skybox{
+	public BufferedImage skybox = null;
 	
-	Cube(Vector c, double x){
-		this.cord = c;
-		this.a = x;
+	Skybox(String path_skybox){
+		try{
+			skybox = ImageIO.read(new File(path_skybox));
+		}catch(Exception e){System.err.println(e);}
+		
 	}
 	
-	public double getMinIntersection(Vector c, Vector v){
-		Vector d = Vector.negate(this.cord, c);
+	public int getPixel(Vector v){
+		if(skybox == null) return 0;
+		double d_y = v.z;
+		double plosk = Math.sqrt(v.x*v.x + v.y*v.y);
+		double d_x_sin = v.x/plosk;
+		double d_x_cos = v.y/plosk;
 		
-		double tx1 = (d.x + this.a)/v.x;
-		double tx2 = (d.x - this.a)/v.x;
-		if(tx1>tx2){
-			double t = tx1;
-			tx1 = tx2;
-			tx2 = t;
+		double phi = Math.asin(d_x_sin);
+		if(d_x_cos < 0){
+			phi = Math.PI-Math.asin(d_x_sin);
 		}
-		double tx = tx1;
-		if(tx<0) tx = tx2;
+		if(phi < 0) phi += Math.PI*2;
 		
-		double ty1 = (d.y + this.a)/v.y;
-		double ty2 = (d.y - this.a)/v.y;
-		if(ty1>ty2){
-			double t = ty1;
-			ty1 = ty2;
-			ty2 = t;
-		}
-		double ty = ty1;
-		if(ty<0) ty = ty2;
-		
-		double tz1 = (d.z + this.a)/v.z;
-		double tz2 = (d.z - this.a)/v.z;
-		if(tz1>tz2){
-			double t = tz1;
-			tz1 = tz2;
-			tz2 = t;
-		}
-		double tz = tz1;
-		if(tx<0) tz = tz2;
-		
-		double t = -1;
-		if(tx>= ty1 && tx<= ty2 && tx>= tz1 && tx<= tz2 && (tx<t || t == -1)) t = tx;
-		if(ty>= tx1 && ty<= tx2 && ty>= tz1 && ty<= tz2 && (ty<t || t == -1)) t = ty;
-		if(tz>= ty1 && tz<= ty2 && tz>= tx1 && tz<= tx2 && (tz<t || t == -1)) t = tz;
-		return t;
-	}
-	public double getMaxIntersection(Vector c, Vector v){
-		Vector d = Vector.negate(c, this.cord);
-		
-		double tx1 = (d.x + this.a)/v.x;
-		double tx2 = (d.x - this.a)/v.x;
-		if(tx1>tx2){
-			double t = tx1;
-			tx1 = tx2;
-			tx2 = t;
-		}
-		double tx = tx2;
-		if(tx<0) tx = tx1;
-		
-		double ty1 = (d.y + this.a)/v.y;
-		double ty2 = (d.y - this.a)/v.y;
-		if(ty1>ty2){
-			double t = ty1;
-			ty1 = ty2;
-			ty2 = t;
-		}
-		double ty = ty2;
-		if(ty<0) ty = ty1;
-		
-		double tz1 = (d.z + this.a)/v.z;
-		double tz2 = (d.z - this.a)/v.z;
-		if(tz1>tz2){
-			double t = tz1;
-			tz1 = tz2;
-			tz2 = t;
-		}
-		double tz = tz2;
-		if(tx<0) tz = tz1;
-		
-		double t = -1;
-		if(tx>= ty1 && tx<= ty2 && tx>= tz1 && tx<= tz2 && tx>t) t = tx;
-		if(ty>= tx1 && ty<= tx2 && ty>= tz1 && ty<= tz2 && ty>t) t = ty;
-		if(tz>= ty1 && tz<= ty2 && tz>= tx1 && tz<= tx2 && tz>t) t = tz;
-		return t;
-	}
-	public Vector getNormal(Vector dote){
-		if(Math.abs(dote.x - this.cord.x-this.a) < 0.01) return Vector.i;
-		if(Math.abs(dote.x - this.cord.x+this.a) < 0.01) return new Vector(-1, 0,0);
-		if(Math.abs(dote.y - this.cord.y-this.a)<0.01) return Vector.j;
-		if(Math.abs(dote.y - this.cord.y+this.a)<0.01) return new Vector(0, -1,0);
-		if(Math.abs(dote.z - this.cord.z-this.a)<0.01) return Vector.k;
-		if(Math.abs(dote.z - this.cord.z+this.a)<0.01) return new Vector(0, 0,-1);
-		return Vector.i;
-	}
-}
-
-class Plane extends Object{
-	public double d;
-	
-	Plane(Vector x, double y){
-		this.cord = x; // normal vector
-		this.d = -y;
-	}
-	public double getMinIntersection(Vector c, Vector v){
-		double t = -(Vector.scalarMul(this.cord, c ) + d)/Vector.scalarMul(this.cord, v);
-		return t;
-	}
-	public double getMaxIntersection(Vector c, Vector v){
-		return getMinIntersection(c,v);
-	}
-	public Vector getNormal(Vector dote){
-		return this.cord;
+		int y = (int)((0.5-Math.asin(d_y)/Math.PI)*skybox.getHeight());
+		if(y<0) y = 0;
+		if(y>skybox.getHeight()) y= skybox.getHeight();
+		int x = (int)(phi/(2*Math.PI)*skybox.getWidth());
+		if(x<0) x = 0;
+		if(x>skybox.getWidth()) x = skybox.getWidth();
+		int a;
+		try{
+			a = skybox.getRGB(x,y);
+		}catch(Exception e){a = 0;}
+		return a;
 	}
 }

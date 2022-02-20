@@ -35,13 +35,13 @@ class Voxel{
 	public Material getMaterial(){return this.mat;}
 	
 	public Voxel getVoxel(Vector c){
-		System.out.println(c.toString());
+		//System.out.println(c.toString());
 		for(int i = 0; i< 8; i++){
 			if(daughter[i] == null){continue;}
 			if(c.x >= daughter[i].cord.x && c.x<= daughter[i].cord.x+daughter[i].size){
 				if(c.y >= daughter[i].cord.y && c.y<= daughter[i].cord.y+daughter[i].size){
 					if(c.z >= daughter[i].cord.z && c.z<= daughter[i].cord.z+daughter[i].size){
-						System.out.println(i);
+						//System.out.println(i);
 						return daughter[i].getVoxel(c);
 					}
 				}
