@@ -72,7 +72,8 @@ class Main extends Component{
 			if(k<0) k = 0;
 			a = Material.getUnityColor(k);
 		}else{
-			a = skybox.getPixel(view);
+			//a = skybox.getPixel(view);
+			a = 0;
 		}
 		
 		this.buffer_screen.setRGB(x+this.getWidth()/2, y+this.getHeight()/2, a);
